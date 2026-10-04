@@ -16,7 +16,10 @@ namespace SDG.Unturned
 		public const int BASE_LAYER = LayerMasks.LOGIC;
 		public const int VIEWMODEL_LAYER = LayerMasks.VIEWMODEL;
 		public const int SCOPE_LAYER = LayerMasks.GROUND2;
-
+		// Custom look (color grading). Tweak these to taste.
+		private const float CUSTOM_POST_EXPOSURE = 0.3f;
+		private const float CUSTOM_SATURATION = 12f;
+		private const float CUSTOM_CONTRAST = 22.4f;
 		private bool _disableAntiAliasingForScreenshot;
 		public bool DisableAntiAliasingForScreenshot
 		{
@@ -98,14 +101,12 @@ namespace SDG.Unturned
 
 		public void setIsHallucinating(bool isHallucinating)
 		{
-			baseProfile.colorGrading.active = isHallucinating;
-			baseProfile.colorGrading.hueShift.Override(Random.Range(-180.0f, 180.0f));
-			viewmodelProfile.colorGrading.active = isHallucinating;
-			viewmodelProfile.colorGrading.hueShift.Override(Random.Range(-180.0f, 180.0f));
-			scopeProfile.colorGrading.active = isHallucinating;
-			scopeProfile.colorGrading.hueShift.Override(Random.Range(-180.0f, 180.0f));
+				// Color grading stays on for the custom look. Hue shift is only used while hallucinating.
+				baseProfile.colorGrading.hueShift.Override(isHallucinating ? Random.Range(-180.0f, 180.0f) : 0.0f);
+				viewmodelProfile.colorGrading.hueShift.Override(isHallucinating ? Random.Range(-180.0f, 180.0f) : 0.0f);
+				scopeProfile.colorGrading.hueShift.Override(isHallucinating ? Random.Range(-180.0f, 180.0f) : 0.0f);
 
-			baseProfile.vignette.active = isHallucinating;
+				baseProfile.vignette.active = isHallucinating;
 		}
 
 		private void tickHallucinationColorGrading(PostProcessProfileWrapper profile, float deltaTime)
@@ -375,8 +376,12 @@ namespace SDG.Unturned
 				bloom.softKnee.Override(0f);
 
 				colorGrading = profile.AddSettings<ColorGrading>();
-				colorGrading.active = false;
-
+				colorGrading.active = true;
+				colorGrading.gradingMode.Override(GradingMode.HighDefinitionRange);
+				colorGrading.tonemapper.Override(Tonemapper.Neutral);
+				colorGrading.postExposure.Override(CUSTOM_POST_EXPOSURE);
+				colorGrading.saturation.Override(CUSTOM_SATURATION);
+				colorGrading.contrast.Override(CUSTOM_CONTRAST);
 				chromaticAberration = profile.AddSettings<ChromaticAberration>();
 				chromaticAberration.active = false;
 
